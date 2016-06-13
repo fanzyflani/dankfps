@@ -1,0 +1,68 @@
+little endian, because big endian sucks
+
+uint16_t last_state_id;
+uint8_t ptyp;
+uint8_t pdata[];
+
+currently PLAYER_MAX is 8, may become 32 once delta compression is in place
+
+ptyp unreliable:
+	0x3E: alldir Close Connection
+
+	0x35: alldir Establish Connection
+	{
+		char name[]; // last byte expected to be NUL, will be SCRUBBED if it isn't
+	}
+	// you send these a few times until you start getting world updates
+
+	// TODO: these are more secure, use them instead once there's enough code in place
+	/*
+	0x10: C->S Hello SYN
+	{
+		uint32_t rand_key_client;
+		uint32_t rand_key_server; // should be 0
+		uint8_t player_id; // should be 0
+		char name[]; // last byte expected to be NUL, will be SCRUBBED if it isn't
+	}
+
+	0x11: S->C Hello SYN-ACK
+	{
+		uint32_t rand_key_client;
+		uint32_t rand_key_server;
+		uint8_t player_id;
+		char name[];
+	}
+
+	0x12: S->C Hello ACK
+	{
+		uint32_t rand_key_client;
+		uint32_t rand_key_server;
+		uint8_t player_id;
+		char name[];
+	}
+	*/
+
+	0x20: S->C All Player State
+	{
+		// TODO: delta compression
+
+		uint16_t relative_timestamp;
+		uint8_t your_player_id;
+		uint16_t timestamp;
+		struct player {
+			uint16_t ry, rx;
+			uint16_t input;
+			uint16_t flags;
+			float px, py, pz;
+			float vx, vy, vz;
+		} players[PLAYER_MAX];
+	}
+
+	0x21: C->S Input State
+	{
+		uint16_t time;
+		uint16_t ry, rx;
+		uint16_t input;
+	}
+
+
